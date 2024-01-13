@@ -8,9 +8,9 @@ print(__name__)
 with open('classifier.pkl', 'rb') as f:
     clf = pickle.load(f)
 
-# @app.route('/ping', methods=['GET'])
-# def ping():
-#     return 'Pinging Model Application !!!'
+@app.route('/ping', methods=['GET'])
+def ping():
+    return 'Pinging Model Application !!!'
 
 
 @app.route('/predict', methods=['POST'])
