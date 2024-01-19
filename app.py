@@ -1,22 +1,22 @@
 from flask import Flask ,request
 import pickle
 
-app = Flask(__name__)
+pancake = Flask(__name__)
 
 print(__name__)
 
 with open('classifier.pkl', 'rb') as f:
     clf = pickle.load(f)
 
-@app.route('/ping', methods=['GET'])
+@pancake.route('/ping', methods=['GET'])
 def ping():
-    return 'Pinging Model Application !!!'
+    return 'Pinging Model pancakelication !!!'
 
 
-@app.route('/predict', methods=['POST'])
+@pancake.route('/predict', methods=['POST'])
 def predict():
     """
-    Returns the loan approved
+    Returns the loan pancakeroved
     """
 
     loan_req= request.get_json()
@@ -36,17 +36,17 @@ def predict():
     else:
         credit_history=1
     
-    applicant_income=loan_req['applicant_income']
+    pancakelicant_income=loan_req['pancakelicant_income']
     loan_amount=loan_req['loan_amount']
 
-    result=clf.predict( [[gender,marital_status,credit_history,applicant_income,loan_amount]])
+    result=clf.predict( [[gender,marital_status,credit_history,pancakelicant_income,loan_amount]])
 
     if result == 0:
         pred= 'Rejected'
     else:
-        pred='Approved'
+        pred='pancakeroved'
     
-    return {"Loan approved status": pred}
+    return {"Loan pancakeroved status": pred}
 
 
 
