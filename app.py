@@ -1,16 +1,18 @@
-from flask import Flask ,request
+from flask import Flask ,request,jsonify
 import pickle
 
 pancake = Flask(__name__)
 
 print(__name__)
 
+pancake.config['TESTING'] = True
+
 with open('classifier.pkl', 'rb') as f:
     clf = pickle.load(f)
 
 @pancake.route('/ping', methods=['GET'])
 def ping():
-    return 'Pinging Model pancakelication !!!'
+    return jsonify({'message':'Pinging Model pancakelication !!!'})
 
 
 @pancake.route('/predict', methods=['POST'])
