@@ -42,7 +42,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: Chandra1295/first-action:latest
+          tags: chandra1295/first-action:tagname
 
 # create job for pushing to ECR
 
