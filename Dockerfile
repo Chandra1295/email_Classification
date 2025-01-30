@@ -11,10 +11,3 @@ RUN pip3 install -r reqiurements.txt
 COPY . .
 
 CMD ["python", "-m", "flask", "run", "--host", "0.0.0.0"]
-
-# Access key
-# AKIAX3G4BDFZWWFNLGFY
-	
-
-# Secret access key    
-# ECvw4Wegx/ZvtUa5d0fIlMCyoEYOxK3alG8YPyPj  
