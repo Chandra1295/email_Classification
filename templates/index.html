@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Click Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email Click Prediction</h1>
+        <form id="inputForm">
+            <label for="jsonData">Enter JSON Data:</label><br>
+            <textarea id="jsonData" placeholder='{"no_of_CTA": 3, "mean_paragraph_len": 100, "body_len": 500, "subject_len": 50, "is_weekend": "Yes", "day_of_week": "Monday", "times_of_day": "Morning"}'></textarea>
+            <br>
+            <button type="submit">Predict</button>
+        </form>
+        <p id="errorMessage" style="color: red;"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById('inputForm');
+        form.onsubmit = function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            let data;
+            try {
+                data = JSON.parse(document.getElementById("jsonData").value);
+            } catch (e) {
+                document.getElementById("errorMessage").innerText = "Invalid JSON format!";
+                return;
+            }
+
+            // Send the JSON data to the server
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())  // Handle as HTML response
+            .then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            })
+            .catch(error => {
+                document.getElementById("errorMessage").innerText = 'Error: ' + error;
+            });
+        };
+    </script>
+</body>
+</html>
+

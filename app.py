@@ -1,55 +1,70 @@
-from flask import Flask ,request,jsonify
 import pickle
+import pandas as pd
+import numpy as np
+from flask import Flask, render_template, request, jsonify
+from email_classifier.preprocess import handle_outliers  # Ensure consistency with training
 
-pancake = Flask(__name__)
+# Initialize Flask app
+app = Flask(__name__)
 
-print(__name__)
+# Load the trained model
+with open("saved_models/email_classifier.pkl", "rb") as f:
+    model = pickle.load(f)
 
-pancake.config['TESTING'] = True
+# Load the pre-trained encoders and scaler
+with open("saved_models/scaler.pkl", "rb") as f:
+    scaler = pickle.load(f)
 
-with open('classifier.pkl', 'rb') as f:
-    clf = pickle.load(f)
+with open("saved_models/onehot_encoder.pkl", "rb") as f:
+    onehot_encoders = pickle.load(f)
 
-@pancake.route('/ping', methods=['GET'])
-def ping():
-    return jsonify({'message':'Pinging Model pancakelication !!!'})
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-
-@pancake.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
-    """
-    Returns the loan pancakeroved
-    """
+    # Get JSON data from the request
+    new_data = pd.DataFrame([request.json])
 
-    loan_req= request.get_json()
+    # Apply outlier handling (same as in preprocess.py)
+    outlier_features = ['no_of_CTA', 'mean_paragraph_len', 'body_len', 'subject_len', 'mean_CTA_len']
+    for feature in outlier_features:
+        if feature in new_data.columns:
+            new_data[feature] = handle_outliers(new_data, feature)
 
-    if loan_req['gender']== 'Male':
-        gender =0
-    else:
-        gender=1
-    
-    if loan_req['married']== 'unmarried':
-        marital_status=0
-    else:
-        marital_status=1
+    # Apply one-hot encoding using saved encoders
+    onehot_features = ['is_weekend', 'day_of_week', 'times_of_day']
+    for feature in onehot_features:
+        if feature in new_data.columns:
+            encoder = onehot_encoders[feature]
+            encoded_values = encoder.transform(new_data[[feature]])
+            encoded_df = pd.DataFrame(encoded_values, 
+                                      columns=encoder.get_feature_names_out([feature]), 
+                                      index=new_data.index)
+            new_data = new_data.drop(columns=[feature]).join(encoded_df)
+        else:
+            print(f"Warning: {feature} missing in new data, using zeros as placeholders.")
+            encoded_df = pd.DataFrame(np.zeros((new_data.shape[0], len(encoder.get_feature_names_out([feature])))),
+                                      columns=encoder.get_feature_names_out([feature]), 
+                                      index=new_data.index)
+            new_data = new_data.join(encoded_df)
 
-    if loan_req['credit_history']== 'No':
-        credit_history =0
-    else:
-        credit_history=1
-    
-    pancakelicant_income=loan_req['pancakelicant_income']
-    loan_amount=loan_req['loan_amount']
+    # Ensure feature alignment (to match model training)
+    expected_features = scaler.feature_names_in_
+    new_data = new_data.reindex(columns=expected_features, fill_value=0)
 
-    result=clf.predict( [[gender,marital_status,credit_history,pancakelicant_income,loan_amount]])
+    # Standardization
+    new_data_scaled = scaler.transform(new_data)
 
-    if result == 0:
-        pred= 'Rejected'
-    else:
-        pred='pancakeroved'
-    
-    return {"Loan pancakeroved status": pred}
+    # Make predictions
+    predictions = model.predict(new_data_scaled)
+    prediction_result = "Clicked" if predictions[0] == 1 else "Not Clicked"
 
+    # Return JSON response with prediction result
+    #return jsonify({'prediction': prediction_result})
+    return render_template('result.html', prediction=prediction_result)
 
+if __name__ == '__main__':
+    app.run(debug=True)
 
-    
