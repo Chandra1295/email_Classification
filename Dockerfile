@@ -1,13 +1,15 @@
-FROM python:3.8-slim-buster
+# Use a base Python image
+FROM python:3.9
 
-WORKDIR /flask-loan-app
+# Set the working directory inside the container
+WORKDIR /app
 
-RUN python3 -m pip install --upgrade pip 
-
-COPY artefacts/reqiurements.txt  reqiurements.txt
-
-RUN pip3 install -r reqiurements.txt
-
+# Copy everything from the project directory to the container
 COPY . .
 
-CMD ["python", "-m", "flask", "run", "--host", "0.0.0.0"]
+# Install dependencies
+RUN pip install -r requirements.txt
+
+# Command to run the application
+CMD ["python", "app.py"]
+
