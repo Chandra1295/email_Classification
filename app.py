@@ -1,6 +1,7 @@
 import pickle
 import pandas as pd
 import numpy as np
+import os
 from flask import Flask, render_template, request, jsonify
 from email_classifier.preprocess import handle_outliers  # Ensure consistency with training
 
@@ -65,6 +66,7 @@ def predict():
     #return jsonify({'prediction': prediction_result})
     return render_template('result.html', prediction=prediction_result)
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000,debug=True)
+DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=DEBUG_MODE)
